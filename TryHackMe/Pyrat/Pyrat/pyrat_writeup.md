@@ -147,3 +147,48 @@ ssh think@<IP>
 think@ip-10-64-189-210:~$ ls
 snap  user.txt
 ```
+
+Una vez dentro de think, procedi a buscar cosas manualmente antes de usar un script buscador como linpeas, encontre en la carpeta 
+
+```bash
+think@ip-10-66-165-27:/var/mail$ cat think
+```
+el siguiente mensaje :
+```bash
+From root@pyrat  Thu Jun 15 09:08:55 2023
+Return-Path: <root@pyrat>
+X-Original-To: think@pyrat
+Delivered-To: think@pyrat
+Received: by pyrat.localdomain (Postfix, from userid 0)
+        id 2E4312141; Thu, 15 Jun 2023 09:08:55 +0000 (UTC)
+Subject: Hello
+To: <think@pyrat>
+X-Mailer: mail (GNU Mailutils 3.7)
+Message-Id: <20230615090855.2E4312141@pyrat.localdomain>
+Date: Thu, 15 Jun 2023 09:08:55 +0000 (UTC)
+From: Dbile Admen <root@pyrat>
+
+Hello jose, I wanted to tell you that i have installed the RAT you posted on your GitHub page, i'll test it tonight so don't be scared if you see it running. Regards, Dbile Admen
+
+```
+La definicion de RAT es Remote Access Trojan, como en el correo se menciono que ya estaba instalado dentro dle sistema, procedo a buscarlo en los procesos 
+
+```bash
+think@ip-10-66-165-27:/var$ ps aux | grep -i rat
+root          15  0.0  0.0      0     0 ?        S    19:11   0:00 [migration/0]
+root          21  0.0  0.0      0     0 ?        S    19:11   0:00 [migration/1]
+root         740  0.0  0.0   2616   592 ?        Ss   19:12   0:00 /bin/sh -c python3 /root/pyrat.py 2>/dev/null
+root         741  0.0  0.7  21872 14484 ?        S    19:12   0:00 python3 /root/pyrat.py
+root         746  0.0  0.6 169444 12520 ?        Sl   19:12   0:00 python3 /root/pyrat.py
+think       1900  0.0  0.0   6440   656 pts/0    S+   19:41   0:00 grep --color=auto -i rat
+```
+
+podemos ver que el troyano ya se encuentra instalado, solo que dentro de root, asi que buscare en que puerto se esta ejecutando el programa para conectarnem con netcat 
+
+
+
+
+
+
+
+
