@@ -34,6 +34,15 @@ Progress: 20481 / 20481 (100.00%)
 ===============================================================
 Finished
 ===============================================================
+al entrar a assets sale una pagina en blanco,, as ique hare fuzzing a la pagina desde assets, y encontre index.php 
+
+.hta                 (Status: 403) [Size: 278]
+.htaccess            (Status: 403) [Size: 278]
+.htpasswd            (Status: 403) [Size: 278]
+images               (Status: 301) [Size: 322] [--> http://10.64.132.198/assets/images/]
+index.php            (Status: 200) [Size: 0]
+
+
 
 
 
@@ -60,4 +69,3 @@ name=Juan&email=juan%40gfmail.com&subject=dedefde&message=dejdejdje
 
 luego de vierificar e investigar creo que la vulnerabilidad puede estar en PHPSESSID, como el setvidor se corre en UBuntu,hare un Session POsinig.
 
-s
