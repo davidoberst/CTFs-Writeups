@@ -174,5 +174,5 @@ yuei.jpg                    100%[=========================================>] 231
 
 2026-06-19 01:31:57 (823 KB/s) - ‘yuei.jpg’ saved [237170/237170]
 
-
+the file oneforall.png is corrupted, so were going to fix it whit a tool "MagicBytes"
 
