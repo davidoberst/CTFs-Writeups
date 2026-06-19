@@ -176,3 +176,36 @@ yuei.jpg                    100%[=========================================>] 231
 
 the file oneforall.png is corrupted, so were going to fix it whit a tool "MagicBytes"
 
+
+[davidoberst@archlinux ~]$ python3 magicbytes.py -i oneforall.jpg -m jpg
+Magic bytes has been changed of oneforall.jpg as jpg
+the image was repaired, so now i will use steghide to see if the file has embedded data
+
+[davidoberst@archlinux ~]$ steghide extract -sf oneforall.jpg
+Enter passphrase: 
+wrote extracted data to "creds.txt".
+[davidoberst@archlinux ~]$ cat creds.txt
+Hi Deku, this is the only way I've found to give yosu your account credentials, as soon as you have them, delete this file:
+
+deku:One?For?All_!!one1/A
+[davidoberst@archlinux ~]$ 
+
+now i will logon on ssh whit the new credentials
+
+[davidoberst@archlinux ~]$ ssh deku@10.65.163.21
+
+las credencilae me permitieron pasar exitosamente :
+
+deku@ip-10-65-163-21:~$ 
+
+
+ahora intenrae abrir de nuevo el archivo que antes no me permitia 
+
+deku@ip-10-65-163-21:~$ ls
+user.txt
+deku@ip-10-65-163-21:~$ cat user.txt
+THM{W3lC0m3_D3kU_1A_0n3f0rAll??}
+deku@ip-10-65-163-21:~$ 
+
+tenemos la primera bandera. ahora busquemos que enocntramos en el suaurio home/deku
+
