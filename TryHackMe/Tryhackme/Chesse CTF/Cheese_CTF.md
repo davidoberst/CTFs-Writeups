@@ -440,3 +440,22 @@ $
 
 si, esta abierto, me conectare con las credenciales : 
 
+$ mysql -u comte -p'VeryCheesyPassword' -D users -e "SELECT * FROM users;"
+
+sigue mostrando el hash : 
+
+id      username        password
+1       comte   5b0c2e1b4fe1410e47f26feff7f4fc4c
+$ 
+
+
+intente cambiar la contraseña : 
+
+$ mysql -u comte -p'VeryCheesyPassword' -D users -e "UPDATE users SET password='482c811da5d5b4bc6d497ffa98491e38' WHERE id=1;"
+$ 
+
+
+pero al ingresar desde ssh no funciona, la contraseña de la base de datos no tiene nnada que ver con la del ssh 
+
+comte@10.64.138.86's password: 
+Permission denied, please try again.
