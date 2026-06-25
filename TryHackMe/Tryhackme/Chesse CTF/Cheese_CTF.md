@@ -459,3 +459,43 @@ pero al ingresar desde ssh no funciona, la contraseña de la base de datos no ti
 
 comte@10.64.138.86's password: 
 Permission denied, please try again.
+
+
+ahora ejecutare linpeas para ver si hay otra forma de entrar : 
+
+creo un servidor en python 
+
+python3 -m http.server 8080
+
+
+luego envio a la maquina victima y foy permisos de jeuccion
+
+dentro de home/comte, hay una carpeta llamada .ssh
+
+$ cd .ssh
+$ ls
+authorized_keys
+$ cat authorized_keys
+$ 
+
+tiene permisos de escritura asi que creare una llave : 
+
+
+The key fingerprint is:
+SHA256:fQj9iazn0GEIfxqqtvKxXhhNx6cMPPZfMT86zD/iwjQ davidoberst@archlinux
+The key's randomart image is:
++---[RSA 2048]----+
+|                 |
+|     . . .       |
+|      B + o o    |
+|     + O B + =   |
+|    . . S O = o  |
+|     o . OE* . . |
+|    o o +o+.=    |
+|  . .=   +o .o.  |
+|   =*.    .o.... |
++----[SHA256]-----+
+[davidoberst@archlinux ~]$ 
+
+
+
