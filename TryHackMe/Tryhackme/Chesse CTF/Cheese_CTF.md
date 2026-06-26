@@ -499,3 +499,39 @@ The key's randomart image is:
 
 
 
+
+Last login: Thu Apr  4 17:26:03 2024 from 192.168.0.112
+comte@ip-10-64-150-31:~$ whoami
+comte
+comte@ip-10-64-150-31:~$ 
+
+
+found the first flag in home : 
+
+
+THM{9f2ce3df1beeecaf695b3a8560c682704c31b17a}
+
+
+revisando de nuevo ocn linpeas, vi que el usuario comte puede acceder como root a los siguientes archivos : 
+
+El usuario comte puede ejecutar los siguientes comandos utilizando sudo sin necesidad de ingresar contraseña:  /bin/systemctl daemon-reload   /bin/systemctl restart exploit.timer   /bin/systemctl start exploit.timer   /bin/systemctl enable exploit.timer   
+
+al leer que hay detras de exploit.timer 
+
+comte@ip-10-64-153-69:/etc/systemd/system$ cat exploit.timer
+[Unit]
+Description=Exploit Timer
+
+[Timer]
+OnBootSec=
+
+[Install]
+WantedBy=timers.target
+comte@ip-10-64-153-69:/etc/systemd/system$ cat exploit.service
+[Unit]
+Description=Exploit Service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c "/bin/cp /usr/bin/xxd /opt/xxd && /bin/chmod +sx /opt/xxd"
+comte@ip-10-64-153-69:/etc/systemd/system$ 
