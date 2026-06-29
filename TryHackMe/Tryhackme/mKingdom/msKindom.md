@@ -97,3 +97,36 @@ packages             (Status: 301) [Size: 328] [--> http://10.65.149.61:85/app/c
 robots.txt           (Status: 200) [Size: 532]
 updates              (Status: 301) [Size: 327] [--> http://10.65.149.61:85/app/castle/updates/]
 Progress: 4751 / 4751 (100.00%)
+
+
+al listar los driectorios activos, tenemos : 
+
+http://10.65.149.61:85/app/castle/application/ ---> Una pagina en blanco, interesante.
+
+http://10.65.149.61:85/app/castle/concrete/ ---> Toda la estructura de archivos del servidor web.
+
+http://10.65.149.61:85/app/castle/packages/ ---> direcotio de Apache sin contenido. 
+
+http://10.65.149.61:85/app/castle/updates/ ---> direcotio de Apache sin contenido. 
+
+robots.txt   ---> mapeo de la pagina, muestra el contenido : 
+
+User-agent: *
+Disallow: /application/attributes
+Disallow: /application/authentication
+Disallow: /application/bootstrap
+Disallow: /application/config
+Disallow: /application/controllers
+Disallow: /application/elements
+Disallow: /application/helpers
+Disallow: /application/jobs
+Disallow: /application/languages
+Disallow: /application/mail
+Disallow: /application/models
+Disallow: /application/page_types
+Disallow: /application/single_pages
+Disallow: /application/tools
+Disallow: /application/views
+Disallow: /ccm/system/captcha/picture
+
+
