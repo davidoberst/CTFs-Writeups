@@ -138,5 +138,9 @@ tambien contre un directorio login.php
 
 al entrar pude  acceder con las credenciales admin password
 
+luego de navegar un rato por la pagina, habia una opcion para subir archivos, y otrsa opcion para poder elegitr que archivos se pueden subir a el blog, asi que permiti subir archivos como 
+
+.php y .py
+
 
 
