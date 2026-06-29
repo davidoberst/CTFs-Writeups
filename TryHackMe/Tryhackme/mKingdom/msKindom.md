@@ -130,3 +130,13 @@ Disallow: /application/views
 Disallow: /ccm/system/captcha/picture
 
 
+----REVISION PROFUNDA DE LAS URLS ENCONTRADAS -------
+
+ http://10.65.149.61:85/app/castle/concrete/ muestra toda la estructutra php del servidor web,sin embago, en todas dice acces denied, excepto en los archivos js.
+
+tambien contre un directorio login.php
+
+al entrar pude  acceder con las credenciales admin password
+
+
+
