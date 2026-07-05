@@ -29,3 +29,72 @@ Images               (Status: 301) [Size: 235] [--> http://10.67.189.47/Images/]
 css                  (Status: 301) [Size: 232] [--> http://10.67.189.47/css/]
 images               (Status: 301) [Size: 235] [--> http://10.67.189.47/images/]
 js                   (Status: 301) [Size: 231] [--> http://10.67.189.47/js/]
+
+
+
+en /images, estan todas las imagemnes del sitio, en la pagina y el reto mencionan metadatos,si lo necesito, probablemente analice los metadatos de las imagenes para ver si tienen una pista, pero quiero  continuar analizando la estrucutra. 
+
+en js,me redirecciona alos archivos javascript de la pagina, y ahi puedo ver el codigo de image-extractor, la funcion del sitio que mencione anteriormente : 
+
+JavasCript : 
+
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("metadataButton").addEventListener("click", function() {
+    var fileInput = document.getElementById("imageFileInput");
+    var file = fileInput.files[0];
+
+    var reader = new FileReader();
+    reader.onload = function() {
+      var fileData = reader.result;
+
+      fetch("http://localhost:61777/meta", {
+        method: "PUT",
+        body: fileData,
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/octet-stream"
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          throw new Error("Error: " + response.status);
+        }
+      })
+      .then(data => {
+        var metadataOutput = document.getElementById("metadataOutput");
+        metadataOutput.innerText = JSON.stringify(data, null, 2);
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
+    };
+
+    reader.readAsArrayBuffer(file);
+  });
+});
+
+en el codigo se puede ver que hace una peticion a un servidor web, ene le puerto 61777, veamos que hay en la url : 
+
+
+http://10.67.189.47:61777/
+
+al entrar, nos dice : 
+Welcome to the Apache Tika 1.17 Server
+
+al buscar la version en google, me arroja un CVE :
+
+CVE-2018-1335 ((Header Command Injection)
+
+lo mas probable es que este sea el caminoi correcto, investigare mas sobre la vulnerabilidad y vere una forma de explotacion en este contexto. 
+
+
+
+
+
+
+
+
+
+
