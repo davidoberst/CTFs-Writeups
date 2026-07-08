@@ -197,4 +197,17 @@ obtuve la primera bandera!
 
 
 
+ahora accederemos como root, simplemente hice lo mismo, puse la sesion en el background, use el xploiut suggester, y econtre un exploit para poder acceder como administrador 
+
+una vez en Users\Administrator\Dekstop\admin.txt
+
+ encontre la bandera 
+
+C:\Users\Administrator\Desktop>type admin.txt
+type admin.txt
+THM{3lev@t3D-4-pr1v35c!}
+
+
+
+
 
