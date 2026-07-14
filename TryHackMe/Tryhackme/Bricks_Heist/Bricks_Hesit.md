@@ -80,3 +80,48 @@ wp-includes          (Status: 301) [Size: 239] [--> https://bricks.thm/wp-includ
 
 
 
+al abrir la url /deed/atom, descargs un archivo xml, al leerlo contiene esto : 
+
+<entry>
+		<author>
+			<name>administrator</name>
+							<uri>http://localhost:8000</uri>
+						</author>
+
+
+<generator uri="https://wordpress.org/" version="6.5">WordPress</generator> 
+
+
+podemos ver un nombre de usario, tal vez, y una version de wordpress, 
+
+ademas de un login de phpmyyadmin : 
+
+https://bricks.thm/phpmyadmin/
+
+
+otra ulr donde encontramos un buscador : https://bricks.thm/?s=
+
+
+hare un escano con wpscan : 
+
+[davidoberst@archlinux Web-Content]$ wpscan --url https://bricks.thm/ --disable-tls-checks -e vp,vt,u
+
+
+vemos que esta usando un tema : 
+
+[+] WordPress theme in use: bricks
+ | Location: https://bricks.thm/wp-content/themes/bricks/
+ ...
+ | Version: 1.9.5 (80% confidence)
+
+
+
+
+
+
+
+
+
+
+
+
