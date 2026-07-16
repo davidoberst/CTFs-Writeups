@@ -177,3 +177,69 @@ bash: no job control in this shell
 apache@ip-10-67-180-97:/data/www/default$ ls
 ls
 650c844110baced87e1606453b93f22a.txt
+
+
+
+enocntre en la carpeta del proceso extraño, otro archivo que no pertenece a linux "inet.conf"
+
+
+apache@ip-10-67-180-97:/lib/NetworkManager$ ls
+ls
+VPN
+conf.d
+dispatcher.d
+inet.conf
+nm-dhcp-helper
+nm-dispatcher
+nm-iface-helper
+nm-inet-dialog
+nm-initrd-generator
+nm-openvpn-auth-dialog
+nm-openvpn-service
+nm-openvpn-service-openvpn-helper
+nm-pptp-auth-dialog
+nm-pptp-service
+system-connections
+
+
+
+al ver su contenido dice :
+
+
+
+ID: 5757314e65474e5962484a4f656d787457544e424e574648555446684d3070735930684b616c70555a7a566b52335276546b686b65575248647a525a57466f77546b64334d6b347a526d685a6255313459316873636b35366247315a4d304531595564476130355864486c6157454a3557544a564e453959556e4a685246497a5932355363303948526a4a6b52464a7a546d706b65466c525054303d
+2025-11-01 15:36:36,211 [*] confbak: Ready!
+2025-11-01 15:36:36,211 [*] Status: Mining!
+2025-11-01 15:36:40,214 [*] Miner()
+2025-11-01 15:36:40,214 [*] Bitcoin Miner Thread Started
+2025-11-01 15:36:40,214 [*] Status: Mining!
+2025-11-01 15:36:42,216 [*] Miner()
+2025-11-01 15:36:44,218 [*] Miner()
+2025-11-01 15:36:46,220 [*] Miner()
+2025-11-01 15:36:48,222 [*] Miner()
+2025-11-01 15:36:50,224 [*] Miner()
+2025-11-01 15:36:52,226 [*] Miner()
+2025-11-01 15:36:54,228 [*] Miner()
+2025-11-01 15:36:56,230 [*] Miner()
+2025-11-01 15:36:58,232 [*] Miner()
+2025-11-01 15:37:00,234 [*] Miner()
+2025-11-01 15:37:02,236 [*] Miner()
+2025-11-01 15:37:03,835 [*] Miner()
+2025-11-01 15:37:05,837 [*] Miner()
+2025-11-01 15:37:07,839 [*] Miner()
+2025-11-01 15:37:09,841 [*] Miner()
+2025-11-01 15:37:11,843 [*] Miner()
+2025-11-01 15:37:13,845 [*] Miner()
+2025-11-01 15:37:15,847 [*] Miner()
+2025-11-01 15:37:17,849 [*] Miner()
+2025-11-01 15:37:19,852 [*] Miner()
+2025-11-01 15:37:21,854 [*] Miner()
+2025-11-01 15:37:23,856 [*] Miner()
+
+
+
+
+con esto encontramos otra bandera que el nombre del log de el miner instance que es inet.conf, com ovimos anteriormewnte, contiene un id, al decodificar ese id obtenemos 
+
+bc1qyk79fcp9hd5kreprce89tkh4wrtl8avt4l67qa
+
