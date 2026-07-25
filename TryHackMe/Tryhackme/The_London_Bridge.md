@@ -95,7 +95,18 @@ cambie la extension, per aun asi reconocio que no es una imagen
 
 Uploaded file is not an image
 
-en ese caso, veamos si funciona incprporar un payload
+al ver el codigo interno de la pagina, puedo ver el comentario que dice : 
+
+To devs: Make sure that people can also add images using link
+
+Intente metodos para ingresar con un payload a reverse shell ,pero no funcionaron, intente hacer otro fuzzing a el sitio, esta vez con un diccionario mas grande 
+
+encintre otro directroio :
+
+view_image           (Status: 405) [Size: 178]
+
+
+
 
 
 
