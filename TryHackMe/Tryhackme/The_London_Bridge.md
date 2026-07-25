@@ -61,6 +61,53 @@ al ver las paginas, parece que no hay mucho, solo lo que la pagina muestra a vis
 
 Nada encontrado en el fuzzing a los resultados anteriores, en ese caso continuare con lo que tengo, como mencione antes, me llama la atencion el diurectorio upload, que en realidad no responde a peticiones GET, solo POST, de todas formas la pagina tiene un boton de upload, antes de subir algo, debo entender, que quiero subir? tengo datos de un servidor Ubuntu, subire una foto normal primero para ver que pasa, ebo entender el servidor primero. Subire una imagen e interceptare la peticion con BurpSuite para verlo mas a fondo.
 
+al subir una imagen, esta es la peticion web que obtenemos : 
+
+POST /upload HTTP/1.1
+Host: 10.66.143.62:8080
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:152.0) Gecko/20100101 Firefox/152.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.9
+Accept-Encoding: gzip, deflate, br
+Content-Type: multipart/form-data; boundary=----geckoformboundary1587d414b0cfa8fc5980b2d48789e99a
+Content-Length: 15392
+Origin: http://10.66.143.62:8080
+Connection: keep-alive
+Referer: http://10.66.143.62:8080/gallery
+Upgrade-Insecure-Requests: 1
+Priority: u=0, i
+
+------geckoformboundary1587d414b0cfa8fc5980b2d48789e99a
+Content-Disposition: form-data; name="file"; filename="caspian.jpeg"
+Content-Type: image/jpeg
+
+ÿØÿà
+
+nada extraño por ahora o que no sd emas informacion, intentare ver si puedo obtener acceso a una shell, pero antes de crear una reverse shell y un puerto escuchando, primero validare si es posible y no hay validaciones por parte del servidor, empezare con subir algo con una extension .php y ver que pasa.
+
+luego de subir la imagen el servidor responde  con : 
+
+Uploaded file is not an image
+
+al parecer solo puedo subir imagenes, en ese caso tendre que meter un payload dentro de una imagen, o tal vez solo cambiar la extension? 
+
+cambie la extension, per aun asi reconocio que no es una imagen
+
+Uploaded file is not an image
+
+en ese caso, veamos si funciona incprporar un payload
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
