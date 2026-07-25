@@ -1,6 +1,5 @@
 
-primero iniciamos con un escaneo en nmap : 
-
+-primero iniciamos con un escaneo en nmap : 
 
 [davidoberst@archlinux ~]$ sudo nmap -sV -O -T5 10.66.143.62
 [sudo] password for davidoberst: 
@@ -103,7 +102,14 @@ Intente metodos para ingresar con un payload a reverse shell ,pero no funcionaro
 
 encintre otro directroio :
 
-view_image           (Status: 405) [Size: 178]
+view_image           
+dejaview 
+
+
+dentro del otro directorio me permite enviar urls de imagenes al servidor para renderizarlas en el navegador, puede ser un indicio de SSRF (Server Side Request Forgery) .
+
+
+
 
 
 
