@@ -18,3 +18,53 @@ Aggressive OS guesses: Linux 5.14 - 6.8 (96%), Linux 4.15 - 5.19 (96%), Linux 4.
 No exact OS matches for host (test conditions non-ideal).
 Network Distance: 3 hops
 Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+
+entraremos a la pagina http://10.66.143.62:8080/ 
+
+en la pagina no vi mucho, me interesaron unas funciones, permite subir imagenes, o archivos, revidsare luego para ver si es una posible entrada para una reverse shell, co nwhatweb pude ver que el sitio web esta sobre gunicorn 
+
+[davidoberst@archlinux ~]$ whatweb http://10.66.143.62:8080
+http://10.66.143.62:8080 [200 OK] Country[RESERVED][ZZ], HTML5, HTTPServer[gunicorn], IP[10.66.143.62], Title[Explore London]
+[davidoberst@archlinux ~]$ 
+
+
+hare un fuzzing al sitio con gobuster :
+
+[davidoberst@archlinux Web-Content]$ gobuster dir -u http://10.66.143.62:8080 -w common.txt
+===============================================================
+Gobuster v3.8.2
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://10.66.143.62:8080
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                common.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.8.2
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+contact              (Status: 200) [Size: 1703]
+feedback             (Status: 405) [Size: 178]
+gallery              (Status: 200) [Size: 1722]
+upload               (Status: 405) [Size: 178]
+Progress: 4751 / 4751 (100.00%)
+===============================================================
+Finished
+===============================================================
+[davidoberst@archlinux Web-Content]$ 
+
+
+al ver las paginas, parece que no hay mucho, solo lo que la pagina muestra a vista previa, hare un fuzzing a cada uno de los resultados obtenidos.
+
+Nada encontrado en el fuzzing a los resultados anteriores, en ese caso continuare con lo que tengo, como mencione antes, me llama la atencion el diurectorio upload, que en realidad no responde a peticiones GET, solo POST, de todas formas la pagina tiene un boton de upload, antes de subir algo, debo entender, que quiero subir? tengo datos de un servidor Ubuntu, subire una foto normal primero para ver que pasa, ebo entender el servidor primero. Subire una imagen e interceptare la peticion con BurpSuite para verlo mas a fondo.
+
+
+
+
+
+
+
+
